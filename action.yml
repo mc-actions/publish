@@ -1,0 +1,51 @@
+name: "Publish folder to S3"
+description: "Use mc CLI to upload file or folder to s3 storage"
+author: Dyakov Space <dev@dyakov.space>
+branding:
+  icon: 'upload-cloud'
+  color: 'green'
+
+inputs:
+  server_alias:
+    description: 'Server alias to use in CLI'
+    default: 'default'
+  s3_bucket:
+    description: 'Name of bucket to store document'
+    required: true
+  from:
+    description: 'Path to local file or folder to upload'
+    required: true
+  to:
+    description: 'Where to store document in `/absolute/path/to/folder` format'
+    default: '/'
+
+runs:
+  using: composite
+  steps:
+    - name: Moving existing files to other folder
+      shell: bash
+      run: |
+        mc rm \
+          --recursive \
+          --force \
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
+        mc mb \
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
+        mc mv --recursive \
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}'\
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
+
+    - name: Uploading files
+      shell: bash
+      run: |
+        mc mirror --overwrite \
+          '${{ inputs.from }}' \
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}${{ inputs.to }}'
+
+    - name: Removing old
+      shell: bash
+      run: |
+        mc rm \
+          --recursive \
+          --force \
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
