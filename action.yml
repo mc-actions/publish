@@ -28,12 +28,7 @@ runs:
         mc rm \
           --recursive \
           --force \
-          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
-        mc mb \
-          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
-        mc mv --recursive \
-          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}'\
-          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/~~~FilesToDrop~~~'
+          '${{ inputs.server_alias }}/${{ inputs.s3_bucket }}/*'
 
     - name: Uploading files
       shell: bash
